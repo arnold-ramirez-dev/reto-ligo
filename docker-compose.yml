@@ -1,0 +1,51 @@
+services:
+  # Desarrollo local: este es el único contenedor necesario.
+  # La API NestJS y el simulador de pagos se ejecutan con Node en tu máquina.
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: cashin
+      POSTGRES_USER: cashin
+      POSTGRES_PASSWORD: cashin
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cashin -d cashin"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # app:
+  #   build: .
+  #   command: sh -c "npm run migration:up && node dist/main.js"
+  #   environment:
+  #     PORT: 3000
+  #     DATABASE_URL: postgresql://cashin:cashin@postgres:5432/cashin
+  #     PAYMENT_PROVIDER_URL: http://payment-provider:4000
+  #     PAYMENT_PROVIDER_TIMEOUT_MS: 2000
+  #     WEBHOOK_SECRET: local-development-webhook-secret-change-me
+  #     RECONCILIATION_INTERVAL_MS: 10000
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #   ports:
+  #     - "3000:3000"
+
+  # payment-provider:
+  #   build: .
+  #   command: node dist/provider-simulator/main.js
+  #   environment:
+  #     PAYMENT_PROVIDER_PORT: 4000
+  #     DATABASE_URL: postgresql://cashin:cashin@postgres:5432/cashin
+  #     WEBHOOK_URL: http://app:3000/webhooks/payment
+  #     WEBHOOK_SECRET: local-development-webhook-secret-change-me
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #   ports:
+  #     - "4000:4000"
+
+volumes:
+  postgres_data:
